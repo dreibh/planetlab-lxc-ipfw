@@ -24,7 +24,7 @@
  */
 
 /*
- * $Id: ipfw2_mod.c 10302 2012-01-19 21:49:23Z marta $
+ * $Id: ipfw2_mod.c 12221 2013-04-03 12:49:25Z marta $
  *
  * The main interface to build ipfw+dummynet as a linux module.
  * (and possibly as a windows module as well, though that part
@@ -747,7 +747,9 @@ linux_lookup(const int proto, const __be32 saddr, const __be16 sport,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,14)
 struct nf_queue_handler ipfw2_queue_handler_desc = {
         .outfn = ipfw2_queue_handler,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,2)
         .name = "ipfw2 dummynet queue",
+#endif
 };
 #define REG_QH_ARG(fn)	&(fn ## _desc)
 #endif
@@ -790,6 +792,26 @@ nf_unregister_hooks(struct nf_hook_ops *ops, int n)
 #define SET_MOD_OWNER	.owner = THIS_MODULE,
 
 #endif	/* !LINUX < 2.6.0 */
+
+/* Arguments for the nf_register_queue_handler and
+ * the nf_unregister_queue_handler hook functions
+ *  Kernel changes here:
+ *  http://patchwork.ozlabs.org/patch/201369/
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,2)
+#define HOOK_REGISTER_ARGS	PF_INET, REG_QH_ARG(ipfw2_queue_handler)
+#define HOOK_UNREGISTER_ARGS	PF_INET  UNREG_QH_ARG(ipfw2_queue_handler)
+int nf_register_queue_handler_(u_int8_t pf, const struct nf_queue_handler *qh) {
+	return nf_register_queue_handler_(pf, qh);
+}
+#else /* linux > 3.8.2 */
+#define HOOK_REGISTER_ARGS	REG_QH_ARG(ipfw2_queue_handler)
+#define HOOK_UNREGISTER_ARGS
+int nf_register_queue_handler_(const struct nf_queue_handler *qh) {
+	nf_register_queue_handler_(qh);
+	return 0;
+}
+#endif
 
 static struct nf_hook_ops ipfw_ops[] __read_mostly = {
         {
@@ -867,7 +889,8 @@ ipfw_module_init(void)
 
 	/* queue handler registration, in order to get network
 	 * packet under a private queue */
-	ret = nf_register_queue_handler(PF_INET, REG_QH_ARG(ipfw2_queue_handler) );
+
+	ret = nf_register_queue_handler_(HOOK_REGISTER_ARGS);
         if (ret < 0)	/* queue busy */
 		goto unregister_sockopt;
 
@@ -881,7 +904,7 @@ ipfw_module_init(void)
 
 /* handle errors on load */
 unregister_sockopt:
-	nf_unregister_queue_handler(PF_INET  UNREG_QH_ARG(ipfw2_queue_handler) );
+	nf_unregister_queue_handler(HOOK_UNREGISTER_ARGS);
 	nf_unregister_sockopt(&ipfw_sockopts);
 
 clean_modules:
@@ -905,7 +928,7 @@ ipfw_module_exit(void)
 #else  /* linux hook */
         nf_unregister_hooks(ipfw_ops, ARRAY_SIZE(ipfw_ops));
 	/* maybe drain the queue before unregistering ? */
-	nf_unregister_queue_handler(PF_INET  UNREG_QH_ARG(ipfw2_queue_handler) );
+	nf_unregister_queue_handler(HOOK_UNREGISTER_ARGS);
 	nf_unregister_sockopt(&ipfw_sockopts);
 #endif	/* __linux__ */
 
