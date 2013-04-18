@@ -802,13 +802,13 @@ nf_unregister_hooks(struct nf_hook_ops *ops, int n)
 #define HOOK_REGISTER_ARGS	PF_INET, REG_QH_ARG(ipfw2_queue_handler)
 #define HOOK_UNREGISTER_ARGS	PF_INET  UNREG_QH_ARG(ipfw2_queue_handler)
 int nf_register_queue_handler_(u_int8_t pf, const struct nf_queue_handler *qh) {
-	return nf_register_queue_handler_(pf, qh);
+	return nf_register_queue_handler(pf, qh);
 }
 #else /* linux > 3.8.2 */
 #define HOOK_REGISTER_ARGS	REG_QH_ARG(ipfw2_queue_handler)
 #define HOOK_UNREGISTER_ARGS
 int nf_register_queue_handler_(const struct nf_queue_handler *qh) {
-	nf_register_queue_handler_(qh);
+	nf_register_queue_handler(qh);
 	return 0;
 }
 #endif
