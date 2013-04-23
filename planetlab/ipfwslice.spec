@@ -13,8 +13,8 @@
 # in 2013 Marta has moved to sourceforge at
 # git clone git://git.code.sf.net/p/dummynet/code your read-only code
 %define name ipfwslice
-%define version 20130405
-%define taglevel 1
+%define version 20130423
+%define taglevel 0
 
 %define release %{taglevel}%{?pldistro:.%{pldistro}}%{?date:.%{date}}
 
