@@ -14,7 +14,7 @@
 # git clone git://git.code.sf.net/p/dummynet/code your read-only code
 %define name ipfwroot
 %define version 20130423
-%define taglevel 0
+%define taglevel 1
 
 # when no planetlab kernel is being built, kernel_version is defined but empty
 %define _with_planetlab_kernel %{?kernel_version:1}%{!?kernel_version:0}

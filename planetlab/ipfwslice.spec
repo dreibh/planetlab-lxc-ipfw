@@ -14,7 +14,7 @@
 # git clone git://git.code.sf.net/p/dummynet/code your read-only code
 %define name ipfwslice
 %define version 20130423
-%define taglevel 0
+%define taglevel 1
 
 %define release %{taglevel}%{?pldistro:.%{pldistro}}%{?date:.%{date}}
 
