@@ -95,7 +95,7 @@ rm -rf $RPM_BUILD_ROOT
 ### this script is also triggered while the node image is being created at build-time
 # some parts of the script do not make sense in this context
 # this is why the build exports PL_BOOTCD=1 in such cases
-depmod -a
+depmod -a %{kernel_id}
 /sbin/chkconfig --add ipfw
 # start the service if not building
 [ -z "$PL_BOOTCD" ] && service ipfw start
