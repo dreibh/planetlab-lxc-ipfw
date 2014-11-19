@@ -267,6 +267,7 @@ endif
   LINUX_VERSION_CODE := $(shell grep LINUX_VERSION_CODE $(KERNELPATH)/include/linux/version.h|cut -d " " -f3)
   ifeq ($(shell if [ -z $(LINUX_VERSION_CODE) ] ; then echo "true"; fi),true)
     $(warning "---- Perhaps you miss a (cd $(KERNELPATH); make oldconfig; make prepare; make scripts)");
+    (cd $(KERNELPATH); make oldconfig; make prepare; make scripts)
   endif
   ifeq ($(shell if [ "$(LINUX_VERSION_CODE)" -le 132630 ] ; then echo "true"; fi),true)
     EXTRA_CFLAGS += $(ccflags-y)
